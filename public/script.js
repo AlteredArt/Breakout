@@ -1,10 +1,10 @@
 var canvas = document.getElementById('myCanvas');
 var ctx = canvas.getContext('2d');
-var x = canvas.width/2;
-var y = canvas.height - 30;
+var x = (canvas.width/2)+Math.floor(Math.random()*21)-10;
+var y = (canvas.height - 30)+Math.floor(Math.random()*21)-10;
 var dx = 2;
 var dy = -2;
-var ballRadius = 10;
+var ballRadius = 30;
 var paddleHeight = 10;
 var paddleWidth = 75;
 var paddleX = (canvas.width-paddleWidth)/2;
@@ -19,13 +19,20 @@ var brickOffsetTop = 30;
 var brickOffsetLeft = 30;
 var score = 0;
 var lives = 3;
-
+var level = 1;
+var maxLevel = 5;
+var paused = false;
+var ball = new Image();
+ball.src = 'bomb.png';
 
 var bricks = [];
-for (c=0; c<brickColumnCount; c++) {
-  bricks[c] = [];
-  for (r=0; r<brickRowCount; r++) {
-    bricks[c][r] = {x: 0, y:0, status: 1};
+initBricks();
+function initBricks() {
+  for (c=0; c<brickColumnCount; c++) {
+    bricks[c] = [];
+    for (r=0; r<brickRowCount; r++) {
+      bricks[c][r] = {x: 0, y:0, status: 1};
+    }
   }
 }
 
@@ -70,18 +77,18 @@ function keyUpHandler(e) {
   }
 }
 
-function drawBall(){
-  ctx.beginPath();
-  ctx.arc(x, y, ballRadius, 0, Math.PI*2);
-  ctx.fillStyle = "#0095DD";
-  ctx.fill();
-  ctx.closePath();
+function drawBall() {
+  // ctx.beginPath();
+  ctx.drawImage(ball, x, y, ballRadius, ballRadius);
+  // ctx.fillStyle = "#0095DD";
+  // ctx.fill();
+  // ctx.closePath();
 }
 
 function drawPaddle() {
   ctx.beginPath();
   ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
-  ctx.fillStyle = "#0095DD";
+  ctx.fillStyle = "#FF0000";
   ctx.fill();
   ctx.closePath();
 }
@@ -96,8 +103,33 @@ function collisionDetection() {
             b.status = 0;
             score++;
             if(score == brickRowCount*brickColumnCount) {
-              alert("YOU WIN, YOU ARE A NERD!");
-              document.location.reload();
+              if (level === maxLevel) {
+                alert("YOU WIN, YOU ARE A NERD!");
+                document.location.reload();
+              } else {
+                level++;
+                brickRowCount++;
+                initBricks();
+                score = 0;
+                dx += 1;
+                dy = -dy;
+                dy -= 1;
+                x = (canvas.width/2)+Math.floor(Math.random()*21)-10;
+                y = canvas.height-30;
+                paddleX = (canvas.width-paddleWidth)/2;
+                paused = true;
+                ctx.beginPath();
+                ctx.rect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#0095DD";
+                ctx.fill();
+                ctx.font = "16px Arial";
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillText("Level " + (level - 1) + " completed, starting next level...", 110, 150);
+                setTimeout(function() {
+                  paused = false;
+                  draw();
+                }, 3000);
+              }
             }
         }
       }
@@ -107,14 +139,19 @@ function collisionDetection() {
 
 function drawScore () {
   ctx.font = "16px Arial";
-  ctx.fillStyle = "#0095DD";
+  ctx.fillStyle = "#FF0000";
   ctx.fillText("Score: "+score, 8, 20);
 }
 
 function drawLives () {
   ctx.font = "16px Arial";
-  ctx.fillStyle = "#0095DD";
+  ctx.fillStyle = "#FF0000";
   ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+}
+function drawLevel () {
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "#FF0000";
+  ctx.fillText("Level: "+level, 210, 20);
 }
 
 
@@ -125,6 +162,7 @@ function draw() {
   drawPaddle();
   drawScore();
   drawLives();
+  drawLevel();
   collisionDetection();
 
   if(y + dy < ballRadius) {
@@ -138,10 +176,10 @@ function draw() {
         alert("GAME OVER");
         document.location.reload();
     } else {
-      x = canvas.width/2;
-      y = canvas.height-30;
-      dx = 2;
-      dy = -2;
+      x = (canvas.width/2)+Math.floor(Math.random()*21)-10;
+      y = (canvas.height-30)+Math.floor(Math.random()*21)-10;
+      // dx = 2;
+      // dy = -2;
       paddleX = (canvas.width-paddleWidth)/2;
       }
     }
@@ -158,7 +196,9 @@ function draw() {
 
   x += dx;
   y += dy;
-  requestAnimationFrame(draw);
+  if (!paused) {
+    requestAnimationFrame(draw);
+  }
 }
 
 document.addEventListener("mousemove", mouseMoveHandler);
