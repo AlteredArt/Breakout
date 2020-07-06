@@ -9,7 +9,7 @@ CSS: Simply add some padding to the HTML canvas.
 Firebase: To deploy the game
 
   Before you get started:
-If you chose to just view a demo, check out my self demo video on youtube:
+If you chose to just view a demo, check out the actual production build:
   https://breakout-jm.web.app
 
 
